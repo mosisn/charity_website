@@ -37,10 +37,20 @@ class Task(models.Model):
 
 class TaskManager(models.Manager):
     def related_tasks_to_charity(self, user):
-        pass
+        charity = Charity.objects.filter(user=user).first()
+        if charity:
+            return self.filter(charity=charity)
+        return self.none()
 
     def related_tasks_to_benefactor(self, user):
-        pass
+        benefactor = Benefactor.objects.filter(user=user).first()
+        if benefactor:
+            return self.filter(assigned_benefactor=benefactor)
+        return self.none()
 
     def all_related_tasks_to_user(self, user):
-        pass
+        charity_tasks = self.related_tasks_to_charity(user)
+        benefactor_tasks = self.related_tasks_to_benefactor(user)
+        pending_tasks = self.filter(state='P')
+
+        return charity_tasks | benefactor_tasks | pending_tasks
